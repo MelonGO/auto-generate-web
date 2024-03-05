@@ -1,0 +1,60 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model User {
+  id       String @id @default(uuid())
+  username String @unique
+  password String
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  name     String
+  link     String    @unique
+  menus    Menu[]
+  sections Section[]
+}
+
+model Menu {
+  id         Int       @id @default(autoincrement())
+  name       String
+  link       String    @unique
+  submenus   Submenu[]
+  sections   Section[]
+  category   Category  @relation(fields: [categoryId], references: [id])
+  categoryId Int
+}
+
+model Submenu {
+  id       Int       @id @default(autoincrement())
+  name     String
+  link     String    @unique
+  sections Section[]
+  menu     Menu      @relation(fields: [menuId], references: [id])
+  menuId   Int
+}
+
+model Section {
+  id         Int       @id @default(autoincrement())
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  prompt     String
+  content    String?
+  generate   Boolean   @default(false)
+  submenu    Submenu?  @relation(fields: [submenuId], references: [id])
+  submenuId  Int?
+  Menu       Menu?     @relation(fields: [menuId], references: [id])
+  menuId     Int?
+  Category   Category? @relation(fields: [categoryId], references: [id])
+  categoryId Int?
+}
